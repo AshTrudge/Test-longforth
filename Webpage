@@ -1,0 +1,137 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, intial scale=1.0">
+    <style>
+        #zombie_map {
+            width: 80%;
+            height: 80%;
+            background-color: grey;
+        }
+    </style>
+    <title>Longforth Lockdown Challenge</title>
+  </head>
+  <body style="background-color:#33adff;">
+    
+  <h1>Longforth Lockdown Challenge</h1>
+  
+  <p>Welcome to the Longforth Lockdown Challenge. 
+  
+  Here, you are able to navigate yourselves around Longforth and collect the clues.
+  
+  <Take a photo in each location and send them to <a href="mailto:ATrudgeon@educ.somerset.gov.uk&subject=Bridgwater Lockdown Challenge">Mr Trudgeon</a></P>
+  
+  <p>Here is what you need to do:<p>
+  <ul>
+  <li> Firstly, open this on a mobile device.</li>
+  <li> Next, get your shoes on ready to go!</li>
+  <li> Then, using the GPS on your phone, walk to each of the Photo Spots around Bridgwater</li>
+  <li> Once you've reached one of the spots, get your camera out and take a picture of the feature You can see the list below.</li>
+  <li> Finally, upload the pictures to Teams.</li>
+  
+  
+  </ul>
+  
+  <p> We look forward to seeing how many spots you visit. Don't forget, you don't have to do them all at once!</P>
+  
+  <p> Here are the features you are taking a photo of:</p>
+  <ul> 
+  <li> The Pond</li>
+  <li> The Farmhouse</li>
+  <li> The Old Showhome</li>
+  <li> Entrance to Longforth View</li>
+  <li> Pritex</li>
+  <li> The big hill out of the estate</li>
+  <li> The train line</li>
+
+  &nbsp;
+  <div id="zombie_map"></div>
+  <script>
+    var bridgwater_lockdown;
+    var old_position;
+    var tolerance = 10;
+
+    var data = `50.98794952466869 -3.227312419462418 Camera.png
+50.984910292224235 -3.227162215757584 Camera.png
+50.98507914369149 -3.224673125791764 Camera.png
+50.987622533529034 -3.232483718443131 Camera.png
+50.985157376201904 -3.233159635114884 Camera.png
+50.985778743265655 -3.2336424327375646 Camera.png
+50.986521671228886 -3.231861445951676 Camera.png`;
+
+    var markers = data.split("\n");
+
+    var all_markers = [];
+
+    function initMap() {
+        bridgwater_lockdown = new google.maps.Map(document.getElementById('zombie_map'), {
+            zoom: 17,
+            center: {lat: 50.986077986478946, lng: -3.229736240859009}
+        });
+
+        if( navigator.geolocation) {
+            navigator.geolocation.watchPosition(set_my_position);
+        }
+        else {
+            alert("Geolocation doesn't work in your browser");
+        }
+
+        for(var i=0; i < markers.length; i++){
+
+            var marker_data = markers[i].trim().split(" ");
+
+            var latitude = marker_data[0];
+            var longitude = marker_data[1];
+            var emoji = marker_data[2];
+
+            // Create the LatLng of the marker
+            var marker_position = new google.maps.LatLng(marker_data[0], marker_data[1]);
+
+            // Create a marker at this point
+            var marker = new google.maps.Marker({
+              position: marker_position,
+              icon: marker_data[2],
+              map: bridgwater_lockdown
+            });
+            // Add this marker to the list
+            all_markers.push(marker);
+        }
+
+        console.log(all_markers);
+
+        old_position = new google.maps.Marker({
+            position: {lat: 51.12782777755871, lng: -3.0033452844881303},
+            map: bridgwater_lockdown
+        })
+    }
+
+    function set_my_position(position){
+        old_position.setMap(null);
+        var pos = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+        var marker = new google.maps.Marker({
+          position: pos,
+          icon: "player.png",
+          map: bridgwater_lockdown
+        });
+        old_position = marker;
+        for(var i=0; i < all_markers.length; i++){
+            var distance = google.maps.geometry.spherical.computeDistanceBetween(pos, all_markers[i].getPosition());
+            if( distance < tolerance ){
+                var what_is_it = all_markers[i].getIcon();
+                what_is_it = what_is_it.replace(".png", "");
+
+                alert("Well done, you've found the " + what_is_it );
+
+                all_markers[i].setMap(null);
+            if( what_is_it != "Camera"){
+                score += 10;
+                alert("Your score is " + score);
+            }
+        }
+    }
+  </script>
+  <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBzZbLNbYvL_vLJskvX5RwRAAynL9omJbE&callback=initMap&libraries=geometry">
+  </script>
+  </body>
+</html>
